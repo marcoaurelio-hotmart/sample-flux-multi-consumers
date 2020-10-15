@@ -3,7 +3,9 @@ package com.sample.reactive.sample.service
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -29,7 +31,7 @@ class SampleService {
         return flux.buffer().timeout(Duration.ofSeconds(4)).doOnError {
             LOGGER.info("error")
             fluxFile.subscribe(fallback())
-        }
+        }.onErrorMap { ResponseStatusException(HttpStatus.REQUEST_TIMEOUT, "timeout request", it) }
       }
 
     fun fallback() = object : Subscriber<SampleData>  {
